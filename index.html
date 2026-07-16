@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>実践5</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#111827">
+<style>
+:root{
+  --bg:#111827; --card:#1F2937; --card2:#273449; --line:#374151;
+  --txt:#F3F4F6; --sub:#9CA3AF; --acc:#34D399; --acc2:#60A5FA; --warn:#F59E0B;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+body{margin:0; background:var(--bg); color:var(--txt);
+  font-family:-apple-system,"Hiragino Sans","Yu Gothic",sans-serif;
+  padding-bottom:calc(70px + env(safe-area-inset-bottom));}
+header{position:sticky; top:0; z-index:10; background:rgba(17,24,39,.92);
+  backdrop-filter:blur(8px); padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center;}
+header h1{font-size:17px; margin:0}
+header .sub{font-size:12px; color:var(--sub)}
+main{padding:14px 14px 20px; max-width:560px; margin:0 auto}
+.card{background:var(--card); border-radius:14px; padding:14px; margin-bottom:12px; border:1px solid var(--line)}
+h2{font-size:15px; margin:0 0 8px}
+.muted{color:var(--sub); font-size:12px; line-height:1.6}
+.btn{display:block; width:100%; padding:14px; border:none; border-radius:12px;
+  background:var(--acc); color:#0B1220; font-size:16px; font-weight:700; cursor:pointer}
+.btn.sec{background:var(--card2); color:var(--txt); border:1px solid var(--line)}
+.btn.small{width:auto; padding:8px 14px; font-size:13px; display:inline-block}
+.btn:active{opacity:.75}
+/* action card */
+.act{display:flex; gap:10px; align-items:flex-start}
+.chk{width:46px; height:46px; border-radius:12px; border:1.5px solid var(--line); flex-shrink:0;
+  background:transparent; color:var(--sub); font-size:22px; cursor:pointer}
+.chk.on{background:var(--acc); border-color:var(--acc); color:#0B1220}
+.act .body{flex:1; min-width:0}
+.act .atext{font-size:15px; font-weight:700; line-height:1.45}
+.act.done .atext{color:var(--sub); text-decoration:line-through}
+.act .meta{font-size:12px; color:var(--sub); margin-top:5px; line-height:1.6}
+.chip{display:inline-block; background:var(--card2); border-radius:99px; padding:1px 9px; font-size:11px; margin-right:4px}
+.chip.retry{background:#4A3B12; color:var(--warn); font-weight:700}
+.srclink{color:var(--acc2); text-decoration:none; font-size:12px}
+.swap{background:none; border:none; color:var(--sub); font-size:16px; padding:4px 6px; cursor:pointer; flex-shrink:0}
+.win{background:linear-gradient(135deg,#065F46,#047857); border:1px solid var(--acc); border-radius:14px;
+  padding:12px 14px; margin-bottom:12px; font-weight:800; font-size:15px; text-align:center}
+.progress{display:flex; gap:5px; margin:0 0 12px}
+.progress i{flex:1; height:8px; border-radius:99px; background:var(--card2)}
+.progress i.on{background:var(--acc)}
+textarea,input.text{width:100%; background:var(--card2); border:1px solid var(--line); color:var(--txt);
+  border-radius:10px; padding:10px; font-size:15px; font-family:inherit}
+label{font-size:12px; color:var(--sub); display:block; margin:8px 0 4px}
+/* tracker */
+table{width:100%; border-collapse:collapse; font-size:13px}
+th,td{padding:6px 2px; text-align:center; border-bottom:1px solid var(--line)}
+th{color:var(--sub); font-weight:600; font-size:11px}
+td.wk{font-size:11px; color:var(--sub); text-align:left; white-space:nowrap}
+.ok4{color:var(--acc); font-weight:800}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px}
+.kpi{background:var(--card2); border-radius:10px; padding:10px; text-align:center}
+.kpi .big{font-size:22px; font-weight:800}
+.kpi .lb{font-size:11px; color:var(--sub)}
+.bankitem{padding:9px 0; border-top:1px solid var(--line); font-size:13px; line-height:1.5}
+.bankitem .cnt{color:var(--acc); font-weight:700; font-size:12px}
+.bankitem .grad{color:var(--warn)}
+nav{position:fixed; bottom:0; left:0; right:0; display:flex; background:rgba(17,24,39,.95);
+  backdrop-filter:blur(8px); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom); z-index:20}
+nav button{flex:1; padding:10px 0 8px; background:none; border:none; color:var(--sub); font-size:11px; cursor:pointer}
+nav button .ico{display:block; font-size:20px; margin-bottom:2px}
+nav button.on{color:var(--acc)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🌱 実践5</h1>
+  <div class="sub" id="hdate"></div>
+</header>
+<main id="main"></main>
+<nav>
+  <button id="nav-today" onclick="go('today')"><span class="ico">✅</span>今日</button>
+  <button id="nav-track" onclick="go('track')"><span class="ico">📈</span>記録</button>
+  <button id="nav-bank" onclick="go('bank')"><span class="ico">📚</span>バンク</button>
+  <button id="nav-set" onclick="go('set')"><span class="ico">⚙️</span>設定</button>
+</nav>
+<script src="jissen-data.js"></script>
+<script src="unchiku-data.js"></script>
+<script>
+const KEY = "jissen5-v1";
+const GRAD = 7; // 完了7回で定着・卒業
+
+function load(){
+  try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.history) return s; }catch(e){}
+  return {history:{}};
+}
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+let state = load();
+let view = "today";
+
+/* ---------- date utils ---------- */
+function today(){ const d=new Date(); return ymd(d); }
+function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function addDays(s,n){ const d=new Date(s+"T12:00:00"); d.setDate(d.getDate()+n); return ymd(d); }
+function dow(s){ return new Date(s+"T12:00:00").getDay(); } // 0=日
+const DOWJ = ["日","月","火","水","木","金","土"];
+
+/* ---------- stats ---------- */
+function doneCount(id){
+  let n=0; for(const d in state.history){ if((state.history[d].done||[]).includes(id)) n++; }
+  return n;
+}
+function lastIssued(id, before){
+  let last=null;
+  for(const d in state.history){ if(d<before && (state.history[d].items||[]).includes(id)) if(!last||d>last) last=d; }
+  return last;
+}
+function consecIssued(id, date){
+  let n=0, d=addDays(date,-1);
+  while(state.history[d] && (state.history[d].items||[]).includes(id)){ n++; d=addDays(d,-1); }
+  return n;
+}
+
+/* ---------- daily selection ---------- */
+function seededRand(seed){ let h=0; for(const c of seed) h=(h*31+c.charCodeAt(0))>>>0; return ()=>{ h=(h*1103515245+12345)>>>0; return h/4294967296; }; }
+
+function eligible(pool, date, exclude){
+  const wd = dow(date);
+  let cand = pool.filter(a => !exclude.includes(a.id) && doneCount(a.id) < GRAD && (!a.wd || a.wd.includes(wd)));
+  // 直近7日に出題したものは避ける(足りなければ解除)
+  let fresh = cand.filter(a => { const l = lastIssued(a.id, date); return !l || addDays(l,7) <= date; });
+  if(!fresh.length) fresh = cand;
+  if(!fresh.length) fresh = pool.filter(a => !exclude.includes(a.id) && doneCount(a.id) < GRAD);
+  return fresh;
+}
+function pick(pool, date, exclude, rnd){
+  const c = eligible(pool, date, exclude);
+  return c.length ? c[Math.floor(rnd()*c.length)] : null;
+}
+function pickUnchiku(date, rnd, exclude){
+  const used = {};
+  for(const d in state.history){
+    const u = (state.history[d].items||[]).find(i=>i.startsWith("U:"));
+    if(u && addDays(d,14) > date) used[u]=1;
+  }
+  let c = UNCHIKU.filter(u => !used["U:"+u.t] && !(exclude||[]).includes("U:"+u.t));
+  if(!c.length) c = UNCHIKU;
+  return c[Math.floor(rnd()*c.length)];
+}
+function generateDay(date){
+  const rnd = seededRand(date);
+  const items = [];
+  // リトライ: 前日の未完から1つ(連続3日まで)
+  const prev = state.history[addDays(date,-1)];
+  let retry = null;
+  if(prev){
+    const undone = (prev.items||[]).filter(i => !i.startsWith("U:") && !(prev.done||[]).includes(i) && consecIssued(i,date) < 3 && doneCount(i) < GRAD);
+    if(undone.length) retry = undone[Math.floor(rnd()*undone.length)];
+  }
+  const slots = [
+    BANK.filter(a=>a.cat==="体"),
+    BANK.filter(a=>a.cat==="習慣"),
+    BANK.filter(a=>a.cat==="時間"),
+    BANK.filter(a=>["人","副業"].includes(a.cat)).concat(BANK.filter(a=>["体","習慣","時間"].includes(a.cat)))
+  ];
+  if(retry){
+    items.push(retry);
+    const cat = BANK.find(a=>a.id===retry).cat;
+    const idx = {"体":0,"習慣":1,"時間":2}[cat];
+    if(idx !== undefined) slots.splice(idx,1); else slots.splice(3,1);
+  }
+  for(const pool of slots){
+    if(items.length>=4) break;
+    const a = pick(pool, date, items, rnd);
+    if(a) items.push(a.id);
+  }
+  items.push("U:"+pickUnchiku(date, rnd, items).t);
+  return {items, done:[], refl:{t:"",d:"",n:""}, retry};
+}
+function getDay(date){
+  if(!state.history[date]) { state.history[date] = generateDay(date); save(); }
+  return state.history[date];
+}
+
+/* ---------- obsidian link ---------- */
+function obsLink(path){ return "obsidian://open?vault="+encodeURIComponent(VAULT)+"&file="+encodeURIComponent(path); }
+function unchikuByTitle(t){ return UNCHIKU.find(u=>u.t===t); }
+
+/* ---------- render ---------- */
+function go(v){ view=v; render(); window.scrollTo(0,0); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+
+function render(){
+  document.getElementById("hdate").textContent = today() + "(" + DOWJ[dow(today())] + ")";
+  for(const id of ["today","track","bank","set"]) document.getElementById("nav-"+id).className = (view===id)?"on":"";
+  const m = document.getElementById("main");
+  if(view==="today") m.innerHTML = renderToday();
+  else if(view==="track") m.innerHTML = renderTrack();
+  else if(view==="bank") m.innerHTML = renderBank();
+  else m.innerHTML = renderSet();
+}
+
+function itemHtml(i, day, date){
+  const done = (day.done||[]).includes(i);
+  const retryChip = (day.retry===i) ? '<span class="chip retry">🔁 リトライ</span>' : "";
+  if(i.startsWith("U:")){
+    const t = i.slice(2), u = unchikuByTitle(t);
+    return `<div class="card"><div class="act ${done?"done":""}">
+      <button class="chk ${done?"on":""}" onclick="toggle('${date}','${i.replace(/'/g,"\\'")}')">${done?"✓":""}</button>
+      <div class="body">
+        <div class="atext">🗣️ 「${esc(t)}」を誰かに話す</div>
+        <div class="meta"><span class="chip">昼休み/夕食の雑談</span>${retryChip}<br>
+        📖 <a class="srclink" href="${u?obsLink(u.p):"#"}">うんちくノートを開く</a></div>
+      </div>
+      <button class="swap" onclick="swapItem('${date}','${i.replace(/'/g,"\\'")}')" title="別のにする">🔄</button>
+    </div></div>`;
+  }
+  const a = BANK.find(x=>x.id===i);
+  if(!a) return "";
+  return `<div class="card"><div class="act ${done?"done":""}">
+    <button class="chk ${done?"on":""}" onclick="toggle('${date}','${i}')">${done?"✓":""}</button>
+    <div class="body">
+      <div class="atext">${a.emoji} ${esc(a.action)}</div>
+      <div class="meta">👣 一歩: ${esc(a.step)}<br>
+      <span class="chip">⏰ ${esc(a.cue)}</span>${retryChip}<br>
+      📖 <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a></div>
+    </div>
+    <button class="swap" onclick="swapItem('${date}','${i}')" title="別のにする">🔄</button>
+  </div></div>`;
+}
+
+function renderToday(){
+  const date = today();
+  const day = getDay(date);
+  const n = (day.done||[]).length;
+  let h = "";
+  h += `<div class="progress">${day.items.map(i=>`<i class="${(day.done||[]).includes(i)?"on":""}"></i>`).join("")}</div>`;
+  if(n>=1) h += `<div class="win">🏆 今日は勝ち!(${n}/5)${n===5?" — 全制覇🎉":""}</div>`;
+  else h += `<div class="muted" style="margin-bottom:12px">1つでもできれば今日は勝ち。全部やらなくていい。</div>`;
+  h += day.items.map(i=>itemHtml(i, day, date)).join("");
+  h += `<div class="card"><h2>🌙 振り返り(3行だけ)</h2>
+    <label>試したこと</label><input class="text" value="${esc(day.refl.t)}" onchange="refl('${date}','t',this.value)">
+    <label>どうだった?</label><input class="text" value="${esc(day.refl.d)}" onchange="refl('${date}','d',this.value)">
+    <label>次どう変える?</label><input class="text" value="${esc(day.refl.n)}" onchange="refl('${date}','n',this.value)"></div>`;
+  return h;
+}
+
+function weekRows(){
+  // W1 = CHALLENGE_START の週の月曜から6週
+  let mon = CHALLENGE_START;
+  while(dow(mon)!==1) mon = addDays(mon,-1);
+  const rows=[];
+  for(let w=0; w<6; w++){
+    const days=[]; let cnt=0;
+    for(let i=0;i<7;i++){
+      const d = addDays(mon, w*7+i);
+      const rec = state.history[d];
+      let mark="・";
+      if(rec){ if((rec.done||[]).length>=1){ mark="⭕"; cnt++; } else if(d<today()) mark="✖"; else mark="・"; }
+      else if(d < CHALLENGE_START) mark="-";
+      days.push(mark);
+    }
+    rows.push({w:w+1, start:addDays(mon,w*7), days, cnt});
+  }
+  return rows;
+}
+function renderTrack(){
+  const rows = weekRows();
+  const totalDays = Object.keys(state.history).filter(d=>(state.history[d].done||[]).length>=1).length;
+  const totalDone = Object.values(state.history).reduce((s,r)=>s+(r.done||[]).length,0);
+  const okWeeks = rows.filter(r=>r.cnt>=4).length;
+  let h = `<div class="grid2">
+    <div class="kpi"><div class="big">${totalDays}</div><div class="lb">実践した日数</div></div>
+    <div class="kpi"><div class="big">${totalDone}</div><div class="lb">実践した数(累計)</div></div>
+    <div class="kpi"><div class="big">${okWeeks}/6</div><div class="lb">週4達成した週</div></div>
+    <div class="kpi"><div class="big">${BANK.filter(a=>doneCount(a.id)>=GRAD).length}</div><div class="lb">✅定着(7回完了)</div></div>
+  </div>`;
+  h += `<div class="card"><h2>🎯 週4日以上 × 6週間(${CHALLENGE_START}〜)</h2>
+    <table><tr><th></th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th><th>日</th><th>計</th></tr>`;
+  for(const r of rows){
+    const md = r.start.slice(5).replace("-","/");
+    h += `<tr><td class="wk">W${r.w} ${md}〜</td>${r.days.map(d=>`<td>${d}</td>`).join("")}<td class="${r.cnt>=4?"ok4":""}">${r.cnt}</td></tr>`;
+  }
+  h += `</table><div class="muted" style="margin-top:8px">⭕=1つ以上実践 / ✖=0個 / 週4列が緑なら達成。5個全部やる必要はない。</div></div>`;
+  const grads = BANK.filter(a=>doneCount(a.id)>=GRAD);
+  if(grads.length){
+    h += `<div class="card"><h2>✅ 定着して卒業したアクション</h2>` +
+      grads.map(a=>`<div class="bankitem">${a.emoji} ${esc(a.action)}</div>`).join("") + `</div>`;
+  }
+  return h;
+}
+
+function renderBank(){
+  const cats = [["体","💪 体・健康"],["習慣","🧠 習慣・メンタル"],["時間","⏰ 時間・仕事"],["人","🤝 人間関係"],["副業","💰 副業・発信"]];
+  let h = `<div class="muted" style="margin-bottom:10px">全${BANK.length}アクション + うんちく${UNCHIKU.length}本。7回完了で✅定着・卒業。補充は「/jissen 補充」で。</div>`;
+  for(const [c,name] of cats){
+    const list = BANK.filter(a=>a.cat===c);
+    if(!list.length) continue;
+    h += `<div class="card"><h2>${name}</h2>` + list.map(a=>{
+      const n = doneCount(a.id);
+      return `<div class="bankitem">${esc(a.action)}<br>
+        <span class="cnt">${n>=GRAD?'<span class="grad">✅定着</span>':"完了"+n+"/"+GRAD}</span> ・
+        📖 <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a></div>`;
+    }).join("") + `</div>`;
+  }
+  return h;
+}
+
+/* ---------- export ---------- */
+function buildMd(){
+  const rows = weekRows();
+  let md = `---\ntags: 実践5\ntype: app-log\nupdated: ${today()}\n---\n# 📱 実践ログ(アプリ)\n\n実践5アプリからの書き出し。最新が上書きされる。\n\n## 🎯 週4×6週トラッカー(${CHALLENGE_START}〜)\n\n|週|開始|月|火|水|木|金|土|日|計|\n|---|---|---|---|---|---|---|---|---|---|\n`;
+  for(const r of rows) md += `|W${r.w}|${r.start.slice(5)}|${r.days.join("|")}|${r.cnt}${r.cnt>=4?" ✅":""}|\n`;
+  md += `\n## 🗓️ デイリー記録\n\n`;
+  const dates = Object.keys(state.history).sort().reverse();
+  for(const d of dates){
+    const rec = state.history[d];
+    md += `### ${d}(${(rec.done||[]).length}/5)\n`;
+    for(const i of rec.items||[]){
+      const done = (rec.done||[]).includes(i);
+      if(i.startsWith("U:")){
+        const u = unchikuByTitle(i.slice(2));
+        md += `- [${done?"x":" "}] 🗣️ ${i.slice(2)} 📖 [[${u?u.p:i.slice(2)}|うんちく]]\n`;
+      } else {
+        const a = BANK.find(x=>x.id===i);
+        if(a) md += `- [${done?"x":" "}] ${a.emoji} ${a.action} 📖 [[${a.src}|${a.srcName}]]\n`;
+      }
+    }
+    if(rec.refl && (rec.refl.t||rec.refl.d||rec.refl.n))
+      md += `- 試した: ${rec.refl.t||""} / どうだった: ${rec.refl.d||""} / 次: ${rec.refl.n||""}\n`;
+    md += `\n`;
+  }
+  return md;
+}
+async function exportMd(){
+  const f = new File([buildMd()], "実践ログ_アプリ.md", {type:"text/markdown"});
+  if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f]});
+  else { await navigator.clipboard.writeText(buildMd()); alert("Markdownをコピーしました"); }
+}
+async function exportJson(){
+  const f = new File([JSON.stringify(state)], "jissen-backup.json", {type:"application/json"});
+  if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f]});
+  else { await navigator.clipboard.writeText(JSON.stringify(state)); alert("JSONをコピーしました"); }
+}
+function importJson(){
+  const t = prompt("バックアップJSONを貼り付け:");
+  if(!t) return;
+  try{ const s = JSON.parse(t); if(!s.history) throw 0; state = s; save(); render(); alert("復元しました"); }
+  catch(e){ alert("読み込めませんでした"); }
+}
+function renderSet(){
+  return `<div class="card"><h2>📤 Obsidianへ書き出し</h2>
+    <div class="muted" style="margin-bottom:10px">「実践ログ_アプリ.md」を共有→Obsidianの 01_private/07_Practice/ に上書き保存。夜の締め(/daily-note 夜)がこれを読んで実践ログに反映する。</div>
+    <button class="btn" onclick="exportMd()">実践ログを書き出す</button></div>
+  <div class="card"><h2>🗄️ バックアップ</h2>
+    <button class="btn sec" style="margin-bottom:8px" onclick="exportJson()">JSONバックアップ</button>
+    <button class="btn sec" onclick="importJson()">JSONから復元</button></div>
+  <div class="card"><h2>⚠️ リセット</h2>
+    <button class="btn sec" onclick="if(confirm('全記録を削除して初期状態に戻しますか?')){localStorage.removeItem(KEY);state=load();render()}">初期化</button></div>
+  <div class="muted">実践5 v1.0.0 — 学びを1日5つ、人生に。<br>1. 極小に分解 / 2. 20秒ルール / 3. 既存習慣に接続 / 4. 同じ場所で / 5. 週4×6週 / 6. 予定に入れる / 7. 振り返りは短く</div>`;
+}
+
+/* ---------- actions ---------- */
+function toggle(date, id){
+  const day = getDay(date);
+  day.done = day.done||[];
+  const k = day.done.indexOf(id);
+  if(k>=0) day.done.splice(k,1); else day.done.push(id);
+  save(); render();
+}
+function swapItem(date, id){
+  const day = getDay(date);
+  const rnd = seededRand(date + "#" + Date.now());
+  let repl = null;
+  if(id.startsWith("U:")) repl = "U:"+pickUnchiku(date, rnd, day.items).t;
+  else {
+    const a = BANK.find(x=>x.id===id);
+    const pool = BANK.filter(x=>x.cat===a.cat);
+    const p = pick(pool, date, day.items, rnd) || pick(BANK, date, day.items, rnd);
+    if(p) repl = p.id;
+  }
+  if(!repl) { alert("代わりの候補がありません"); return; }
+  const k = day.items.indexOf(id);
+  day.items[k] = repl;
+  day.done = (day.done||[]).filter(x=>x!==id);
+  if(day.retry===id) day.retry=null;
+  save(); render();
+}
+function refl(date, k, v){ const day=getDay(date); day.refl=day.refl||{t:"",d:"",n:""}; day.refl[k]=v; save(); }
+
+render();
+if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
