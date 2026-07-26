@@ -32,6 +32,16 @@ h2{font-size:15px; margin:0 0 8px}
 .btn.sec{background:var(--card2); color:var(--txt); border:1px solid var(--line)}
 .btn.small{width:auto; padding:9px 14px; font-size:13px; display:inline-block; margin-right:6px}
 .btn:active{opacity:.75}
+a.btn{text-decoration:none; text-align:center}
+/* 出典ピッカー */
+.srclist{margin-top:6px; max-height:230px; overflow-y:auto; border:1px solid var(--line); border-radius:10px}
+.srchit{padding:10px; border-bottom:1px solid var(--line); font-size:13px; line-height:1.4; cursor:pointer}
+.srchit:last-child{border-bottom:none}
+.srchit:active{background:var(--card2)}
+.srchit .g{font-size:11px; color:var(--sub); margin-left:4px}
+.srcchip{display:flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--acc2);
+  border-radius:10px; padding:8px 10px; margin-top:6px; font-size:13px}
+.srcchip .x{margin-left:auto; background:none; border:none; color:var(--sub); font-size:16px; cursor:pointer}
 /* action card */
 .act{display:flex; gap:10px; align-items:flex-start}
 .chk{width:46px; height:46px; border-radius:12px; border:1.5px solid var(--line); flex-shrink:0;
@@ -120,6 +130,7 @@ nav .dot{position:absolute; top:6px; right:calc(50% - 18px); min-width:16px; hei
 <input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">
 <script src="jissen-data.js"></script>
 <script src="unchiku-data.js"></script>
+<script src="notes-data.js"></script>
 <script>
 const KEY = "jissen5-v1";
 const GRAD = 7; // 完了7回で定着・卒業
@@ -134,8 +145,10 @@ let state = load();
 state.notes = state.notes || [];      // 学びメモ(受信箱)
 state.custom = state.custom || [];    // 学びから作った自分専用アクション
 state.draft = state.draft || {text:"", src:"", page:"", photos:[]};
+state.draft.srcPath = state.draft.srcPath || "";   // Vault内の既存ノート(出典)
 let view = "today";
 let making = null;   // 実践化フォームを開いているノートID
+let srcHits = [];    // 出典ピッカーの検索結果
 
 /* ---------- date utils ---------- */
 function today(){ const d=new Date(); return ymd(d); }
@@ -328,9 +341,9 @@ function itemHtml(i, day, date){
   }
   const a = findAct(i);
   if(!a) return "";
-  const srcHtml = a.custom
+  const srcHtml = (a.custom && !a.src)
     ? `✍️ <span class="srclink">${esc(a.srcName)}</span>`
-    : `📖 <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a>`;
+    : `${a.custom?"✍️":"📖"} <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a>`;
   const mineChip = a.custom ? '<span class="chip mine">✍️ 自分の学び</span>' : "";
   return `<div class="card"><div class="act ${done?"done":""}">
     <button class="chk ${done?"on":""}" onclick="toggle('${date}','${i}')">${done?"✓":""}</button>
@@ -379,9 +392,13 @@ function renderLearn(){
     <label>気づき・学んだこと</label>
     <textarea id="dtext" placeholder="例: 集中力が切れるのは意志の問題じゃなく環境。机の上に物を置かない。" oninput="syncDraft()">${esc(d.text)}</textarea>
     <div class="row2">
-      <div><label>出典(本・動画名)</label><input class="text" id="dsrc" value="${esc(d.src)}" placeholder="例: 最高の体調" oninput="syncDraft()"></div>
+      <div><label>出典(Vaultのノートを検索 / 自由入力も可)</label><input class="text" id="dsrc" value="${esc(d.src)}" placeholder="例: 最高の体調" oninput="syncDraft(); srcSearch(this.value)"></div>
       <div class="narrow"><label>ページ</label><input class="text" id="dpage" value="${esc(d.page)}" inputmode="numeric" placeholder="p." oninput="syncDraft()"></div>
     </div>
+    <div id="srclist"></div>
+    ${d.srcPath ? `<div class="srcchip">📖 <span>${esc(d.src)}</span>
+      <button class="x" onclick="clearSrc()">✕</button></div>
+      <div class="muted" style="margin-top:4px">このメモは保存後、このノートに直接追記できます</div>` : ""}
     ${d.photos.length ? `<div class="thumbs">${d.photos.map((k,i)=>
       `<div class="thumb"><img data-photo="${k}" alt=""><button class="del" onclick="rmDraftPhoto(${i})">×</button></div>`).join("")}</div>` : ""}
     <div style="margin-top:10px">
@@ -405,7 +422,7 @@ function noteHtml(n){
   let h = `<div class="note">
     <div class="ndate">${n.date}(${DOWJ[dow(n.date)]}) ${badge}</div>
     <div class="ntext">${esc(n.text)}</div>
-    ${n.src ? `<div class="nsrc">📖 ${esc(n.src)}${n.page?` p.${esc(n.page)}`:""}</div>` : ""}
+    ${n.src ? `<div class="nsrc">📖 ${n.srcPath?`<a class="srclink" href="${obsLink(n.srcPath)}">${esc(n.src)}</a>`:esc(n.src)}${n.page?` p.${esc(n.page)}`:""}${n.appended?' <span class="badge made">追記済み</span>':""}</div>` : ""}
     ${(n.photos||[]).map(k=>`<img class="notephoto" data-photo="${k}" alt="" onclick="this.classList.toggle('full')">`).join("")}`;
   if(n.status==="made" && n.actionId){
     const a = findAct(n.actionId);
@@ -431,14 +448,18 @@ function noteHtml(n){
       <button class="btn" style="margin-top:10px" onclick="makeAction(${n.id})">アクションにする</button>
       <button class="btn sec" style="margin-top:8px" onclick="making=null;render()">やめる</button>
     </div>`;
-  } else if(n.status==="todo"){
-    h += `<div style="margin-top:8px">
-      <button class="btn sec small" onclick="making=${n.id};render()">🌱 実践にする</button>
-      <button class="btn sec small" onclick="keepNote(${n.id})">📦 保管</button>
-      <button class="btn sec small" onclick="delNote(${n.id})">🗑</button>
-    </div>`;
   } else {
-    h += `<div style="margin-top:8px"><button class="btn sec small" onclick="delNote(${n.id})">🗑</button></div>`;
+    const appendBtn = n.srcPath
+      ? `<a class="btn sec small" href="${appendUrl(n)}" onclick="markAppended(${n.id})">➕ 出典ノートに追記</a>` : "";
+    h += n.status==="todo"
+      ? `<div style="margin-top:8px">
+          <button class="btn sec small" onclick="making=${n.id};render()">🌱 実践にする</button>
+          ${appendBtn}
+          <button class="btn sec small" onclick="keepNote(${n.id})">📦 保管</button>
+          <button class="btn sec small" onclick="delNote(${n.id})">🗑</button>
+        </div>`
+      : `<div style="margin-top:8px">${appendBtn}
+          <button class="btn sec small" onclick="delNote(${n.id})">🗑</button></div>`;
   }
   return h + `</div>`;
 }
@@ -552,7 +573,7 @@ function buildNotesMd(){
     const st = n.status==="todo" ? "未処理" : n.status==="made" ? "🌱実践にした" : "📦保管";
     md += `## ${n.date} — ${st}\n\n`;
     md += `> ${n.text.replace(/\n/g,"\n> ")}\n\n`;
-    if(n.src) md += `- 出典: ${n.src}${n.page?` p.${n.page}`:""}\n`;
+    if(n.src) md += `- 出典: ${n.srcPath?`[[${n.srcPath}|${n.src}]]`:n.src}${n.page?` p.${n.page}`:""}${n.appended?"(出典ノートに追記済み)":""}\n`;
     for(const [i,k] of (n.photos||[]).entries()) md += `- ![[${photoName(n,i)}]]\n`;
     if(n.status==="made" && n.actionId){
       const a = findAct(n.actionId);
@@ -614,7 +635,11 @@ function renderSet(){
     <button class="btn sec" onclick="importJson()">JSONから復元</button></div>
   <div class="card"><h2>⚠️ リセット</h2>
     <button class="btn sec" onclick="if(confirm('全記録を削除して初期状態に戻しますか?')){localStorage.removeItem(KEY);state=load();state.notes=[];state.custom=[];state.draft={text:'',src:'',page:'',photos:[]};render()}">初期化</button></div>
-  <div class="muted">実践5 v1.2.0 — 学びを1日5つ、人生に。<br>1. 極小に分解 / 2. 20秒ルール / 3. 既存習慣に接続 / 4. 同じ場所で / 5. 週4×6週 / 6. 予定に入れる / 7. 振り返りは短く</div>`;
+  <div class="card"><h2>📚 出典ノートへの追記について</h2>
+    <div class="muted">学びメモに出典(Vaultのノート)を紐付けると、受信箱に「➕ 出典ノートに追記」が出ます。押すとObsidianが開き、そのノートの末尾にcallout形式でメモが足されます。
+    <b>初回だけ確認してください</b>: 既存ノートの末尾に足されず新しいノートができてしまう場合は、Obsidianのバージョンがappendに対応していないので教えてください(別方式に変えます)。<br>
+    索引は${SRCNOTES.length}ノート(Books/D-Lab/TAKAHIRO)。ノートを増やしたら「/jissen 補充」で更新されます。</div></div>
+  <div class="muted">実践5 v1.3.0 — 学びを1日5つ、人生に。<br>1. 極小に分解 / 2. 20秒ルール / 3. 既存習慣に接続 / 4. 同じ場所で / 5. 週4×6週 / 6. 予定に入れる / 7. 振り返りは短く</div>`;
 }
 
 /* ---------- actions ---------- */
@@ -649,9 +674,36 @@ function refl(date, k, v){ const day=getDay(date); day.refl=day.refl||{t:"",d:""
 function syncDraft(){
   const t=document.getElementById("dtext"), s=document.getElementById("dsrc"), p=document.getElementById("dpage");
   if(t) state.draft.text = t.value;
-  if(s) state.draft.src = s.value;
+  if(s){
+    if(state.draft.srcPath && s.value !== state.draft.src) state.draft.srcPath = ""; // 手打ちで変えたら紐付けを外す
+    state.draft.src = s.value;
+  }
   if(p) state.draft.page = p.value;
   save();
+}
+/* 出典ピッカー: Vault内の既存ノート(Books/D-Lab/TAKAHIRO)を検索して紐付ける */
+function srcSearch(q){
+  const box = document.getElementById("srclist");
+  if(!box) return;
+  q = (q||"").trim().toLowerCase();
+  if(q.length < 2 || state.draft.srcPath){ box.innerHTML = ""; srcHits = []; return; }
+  srcHits = SRCNOTES.filter(n => n.t.toLowerCase().includes(q)).slice(0, 12);
+  box.innerHTML = srcHits.length
+    ? `<div class="srclist">` + srcHits.map((n,i)=>
+        `<div class="srchit" onclick="pickSrc(${i})">${esc(n.t)}<span class="g">${esc(n.g)}</span></div>`).join("") + `</div>`
+    : `<div class="muted" style="margin-top:6px">一致するノートなし(このまま自由入力でもOK)</div>`;
+}
+function pickSrc(i){
+  const n = srcHits[i];
+  if(!n) return;
+  state.draft.src = n.t;
+  state.draft.srcPath = n.p;
+  srcHits = [];
+  save(); render();
+}
+function clearSrc(){
+  state.draft.srcPath = "";
+  save(); render();
 }
 async function addPhotos(input){
   const files = Array.from(input.files||[]);
@@ -681,11 +733,29 @@ function saveNote(){
   if(!d.text.trim() && !d.photos.length){ alert("気づきを1行、または写真を入れてください"); return; }
   state.notes.push({
     id: Date.now(), date: today(), text: d.text.trim(),
-    src: d.src.trim(), page: d.page.trim(), photos: d.photos.slice(),
-    status: "todo", actionId: null, exported: false
+    src: d.src.trim(), srcPath: d.srcPath||"", page: d.page.trim(), photos: d.photos.slice(),
+    status: "todo", actionId: null, exported: false, appended: false
   });
-  state.draft = {text:"", src:"", page:"", photos:[]};
+  state.draft = {text:"", src:"", page:"", photos:[], srcPath:""};
   save(); render();
+}
+/* 出典ノートへの追記(Obsidian URIのappend) */
+function appendBlock(n){
+  const a = n.actionId ? findAct(n.actionId) : null;
+  let s = `\n> [!note] 📱 実践5メモ ${n.date}\n> ${n.text.replace(/\n/g, "\n> ")}\n`;
+  if(n.page) s += `> — p.${n.page}\n`;
+  if(a) s += `> - 🌱 実践: **${a.action}**(一歩: ${a.step} / ${a.cue})\n`;
+  if(n.exported) for(const [i,k] of (n.photos||[]).entries()) s += `> ![[${photoName(n,i)}]]\n`;
+  return s;
+}
+function appendUrl(n){
+  return "obsidian://new?vault=" + encodeURIComponent(VAULT)
+    + "&file=" + encodeURIComponent(n.srcPath)
+    + "&append=true&content=" + encodeURIComponent(appendBlock(n));
+}
+function markAppended(id){
+  const n = state.notes.find(x=>x.id===id);
+  if(n){ n.appended = true; save(); }   // Obsidianへ遷移するのでここでは再描画しない
 }
 function keepNote(id){
   const n = state.notes.find(x=>x.id===id);
@@ -720,7 +790,8 @@ function makeAction(noteId){
   state.custom.push({
     id, cat, emoji: CAT_EMOJI[cat]||"🌱", action, step, cue,
     custom: true, noteId,
-    src: "", srcName: (n.src ? n.src + (n.page?` p.${n.page}`:"") : "自分の学び") + `(${n.date})`
+    src: n.srcPath || "",
+    srcName: (n.src ? n.src + (n.page?` p.${n.page}`:"") : "自分の学び") + `(${n.date})`
   });
   n.status = "made"; n.actionId = id;
   making = null;
