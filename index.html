@@ -12,7 +12,7 @@
 <style>
 :root{
   --bg:#111827; --card:#1F2937; --card2:#273449; --line:#374151;
-  --txt:#F3F4F6; --sub:#9CA3AF; --acc:#34D399; --acc2:#60A5FA; --warn:#F59E0B;
+  --txt:#F3F4F6; --sub:#9CA3AF; --acc:#34D399; --acc2:#60A5FA; --warn:#F59E0B; --pink:#F472B6;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 body{margin:0; background:var(--bg); color:var(--txt);
@@ -30,7 +30,7 @@ h2{font-size:15px; margin:0 0 8px}
 .btn{display:block; width:100%; padding:14px; border:none; border-radius:12px;
   background:var(--acc); color:#0B1220; font-size:16px; font-weight:700; cursor:pointer}
 .btn.sec{background:var(--card2); color:var(--txt); border:1px solid var(--line)}
-.btn.small{width:auto; padding:8px 14px; font-size:13px; display:inline-block}
+.btn.small{width:auto; padding:9px 14px; font-size:13px; display:inline-block; margin-right:6px}
 .btn:active{opacity:.75}
 /* action card */
 .act{display:flex; gap:10px; align-items:flex-start}
@@ -43,16 +43,44 @@ h2{font-size:15px; margin:0 0 8px}
 .act .meta{font-size:12px; color:var(--sub); margin-top:5px; line-height:1.6}
 .chip{display:inline-block; background:var(--card2); border-radius:99px; padding:1px 9px; font-size:11px; margin-right:4px}
 .chip.retry{background:#4A3B12; color:var(--warn); font-weight:700}
+.chip.mine{background:#4A1D3D; color:var(--pink); font-weight:700}
 .srclink{color:var(--acc2); text-decoration:none; font-size:12px}
 .swap{background:none; border:none; color:var(--sub); font-size:16px; padding:4px 6px; cursor:pointer; flex-shrink:0}
 .win{background:linear-gradient(135deg,#065F46,#047857); border:1px solid var(--acc); border-radius:14px;
   padding:12px 14px; margin-bottom:12px; font-weight:800; font-size:15px; text-align:center}
+.banner{background:#3B2A0B; border:1px solid var(--warn); border-radius:14px; padding:12px 14px;
+  margin-bottom:12px; font-size:14px; font-weight:700; color:#FDE68A}
+.banner button{margin-top:8px}
 .progress{display:flex; gap:5px; margin:0 0 12px}
 .progress i{flex:1; height:8px; border-radius:99px; background:var(--card2)}
 .progress i.on{background:var(--acc)}
-textarea,input.text{width:100%; background:var(--card2); border:1px solid var(--line); color:var(--txt);
-  border-radius:10px; padding:10px; font-size:15px; font-family:inherit}
+textarea,input.text,select.text{width:100%; background:var(--card2); border:1px solid var(--line); color:var(--txt);
+  border-radius:10px; padding:10px; font-size:15px; font-family:inherit; -webkit-appearance:none}
+textarea{min-height:88px; resize:vertical}
 label{font-size:12px; color:var(--sub); display:block; margin:8px 0 4px}
+.row2{display:flex; gap:8px}
+.row2 > *{flex:1; min-width:0}
+.row2 .narrow{flex:0 0 96px}
+/* photos */
+.thumbs{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+.thumb{position:relative; width:76px; height:76px; border-radius:10px; overflow:hidden;
+  background:var(--card2); border:1px solid var(--line)}
+.thumb img{width:100%; height:100%; object-fit:cover; display:block}
+.thumb .del{position:absolute; top:2px; right:2px; width:22px; height:22px; border-radius:99px;
+  border:none; background:rgba(0,0,0,.65); color:#fff; font-size:13px; line-height:1; cursor:pointer}
+.notephoto{width:100%; max-height:220px; object-fit:cover; object-position:top;
+  border-radius:10px; margin-top:8px; display:block; cursor:zoom-in}
+.notephoto.full{max-height:none; object-fit:contain; cursor:zoom-out}
+/* inbox */
+.note{border-top:1px solid var(--line); padding:12px 0}
+.note:first-of-type{border-top:none}
+.note .ndate{font-size:11px; color:var(--sub)}
+.note .ntext{font-size:14px; line-height:1.6; margin:4px 0; white-space:pre-wrap}
+.note .nsrc{font-size:12px; color:var(--acc2)}
+.badge{display:inline-block; border-radius:99px; padding:1px 9px; font-size:11px; font-weight:700}
+.badge.todo{background:#3B2A0B; color:var(--warn)}
+.badge.made{background:#0B3B2A; color:var(--acc)}
+.badge.kept{background:var(--card2); color:var(--sub)}
 /* tracker */
 table{width:100%; border-collapse:collapse; font-size:13px}
 th,td{padding:6px 2px; text-align:center; border-bottom:1px solid var(--line)}
@@ -69,9 +97,11 @@ td.wk{font-size:11px; color:var(--sub); text-align:left; white-space:nowrap}
 nav{position:fixed; bottom:0; left:0; right:0; display:flex; background:rgba(17,24,39,.95);
   backdrop-filter:blur(8px); border-top:1px solid var(--line);
   padding-bottom:env(safe-area-inset-bottom); z-index:20}
-nav button{flex:1; padding:10px 0 8px; background:none; border:none; color:var(--sub); font-size:11px; cursor:pointer}
-nav button .ico{display:block; font-size:20px; margin-bottom:2px}
+nav button{flex:1; padding:10px 0 8px; background:none; border:none; color:var(--sub); font-size:10px; cursor:pointer; position:relative}
+nav button .ico{display:block; font-size:19px; margin-bottom:2px}
 nav button.on{color:var(--acc)}
+nav .dot{position:absolute; top:6px; right:calc(50% - 18px); min-width:16px; height:16px; border-radius:99px;
+  background:var(--warn); color:#1a1200; font-size:10px; font-weight:800; line-height:16px}
 </style>
 </head>
 <body>
@@ -82,15 +112,18 @@ nav button.on{color:var(--acc)}
 <main id="main"></main>
 <nav>
   <button id="nav-today" onclick="go('today')"><span class="ico">✅</span>今日</button>
+  <button id="nav-learn" onclick="go('learn')"><span class="ico">💡</span>学び<span id="learndot"></span></button>
   <button id="nav-track" onclick="go('track')"><span class="ico">📈</span>記録</button>
   <button id="nav-bank" onclick="go('bank')"><span class="ico">📚</span>バンク</button>
   <button id="nav-set" onclick="go('set')"><span class="ico">⚙️</span>設定</button>
 </nav>
+<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="addPhotos(this)">
 <script src="jissen-data.js"></script>
 <script src="unchiku-data.js"></script>
 <script>
 const KEY = "jissen5-v1";
 const GRAD = 7; // 完了7回で定着・卒業
+const CUES = ["朝ノートを開いたとき","昼食","昼休み","仕事に着手する前","トレ前後","帰宅直後","夕食","寝る前","気づいた瞬間"];
 
 function load(){
   try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.history) return s; }catch(e){}
@@ -98,7 +131,11 @@ function load(){
 }
 function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 let state = load();
+state.notes = state.notes || [];      // 学びメモ(受信箱)
+state.custom = state.custom || [];    // 学びから作った自分専用アクション
+state.draft = state.draft || {text:"", src:"", page:"", photos:[]};
 let view = "today";
+let making = null;   // 実践化フォームを開いているノートID
 
 /* ---------- date utils ---------- */
 function today(){ const d=new Date(); return ymd(d); }
@@ -106,6 +143,58 @@ function ymd(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0
 function addDays(s,n){ const d=new Date(s+"T12:00:00"); d.setDate(d.getDate()+n); return ymd(d); }
 function dow(s){ return new Date(s+"T12:00:00").getDay(); } // 0=日
 const DOWJ = ["日","月","火","水","木","金","土"];
+
+/* ---------- photo store (IndexedDB) ---------- */
+let dbp = null;
+function db(){
+  if(!dbp) dbp = new Promise((res,rej)=>{
+    const r = indexedDB.open("jissen5-photos", 1);
+    r.onupgradeneeded = () => { if(!r.result.objectStoreNames.contains("photos")) r.result.createObjectStore("photos"); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  return dbp;
+}
+async function putPhoto(key, blob){
+  const d = await db();
+  return new Promise((res,rej)=>{ const t=d.transaction("photos","readwrite"); t.objectStore("photos").put(blob,key); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); });
+}
+async function getPhoto(key){
+  if(photoCache[key]) return photoCache[key];
+  const d = await db();
+  const b = await new Promise((res,rej)=>{ const t=d.transaction("photos","readonly"); const q=t.objectStore("photos").get(key); q.onsuccess=()=>res(q.result); q.onerror=()=>rej(q.error); });
+  if(b) photoCache[key] = b;
+  return b;
+}
+async function delPhoto(key){
+  delete photoCache[key];
+  const d = await db();
+  return new Promise((res,rej)=>{ const t=d.transaction("photos","readwrite"); t.objectStore("photos").delete(key); t.oncomplete=()=>res(); t.onerror=()=>rej(t.error); });
+}
+const photoCache = {};   // key -> Blob(共有をユーザー操作直後に走らせるためのキャッシュ)
+let objUrls = [];
+
+function resizeImage(file, max, q){
+  return new Promise((res,rej)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      let w = img.naturalWidth, h = img.naturalHeight;
+      const sc = Math.min(1, max/Math.max(w,h));
+      w = Math.max(1, Math.round(w*sc)); h = Math.max(1, Math.round(h*sc));
+      const c = document.createElement("canvas"); c.width=w; c.height=h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? res(b) : rej(new Error("toBlob failed")), "image/jpeg", q);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("画像を読み込めませんでした")); };
+    img.src = url;
+  });
+}
+
+/* ---------- actions pool (バンク + 自分の学び) ---------- */
+function allActions(){ return BANK.concat(state.custom||[]); }
+function findAct(id){ return allActions().find(a=>a.id===id); }
 
 /* ---------- stats ---------- */
 function doneCount(id){
@@ -116,6 +205,10 @@ function lastIssued(id, before){
   let last=null;
   for(const d in state.history){ if(d<before && (state.history[d].items||[]).includes(id)) if(!last||d>last) last=d; }
   return last;
+}
+function everIssued(id){
+  for(const d in state.history){ if((state.history[d].items||[]).includes(id)) return true; }
+  return false;
 }
 function consecIssued(id, date){
   let n=0, d=addDays(date,-1);
@@ -133,7 +226,9 @@ function eligible(pool, date, exclude){
   let fresh = cand.filter(a => { const l = lastIssued(a.id, date); return !l || addDays(l,7) <= date; });
   if(!fresh.length) fresh = cand;
   if(!fresh.length) fresh = pool.filter(a => !exclude.includes(a.id) && doneCount(a.id) < GRAD);
-  return fresh;
+  // 自分の学びから作った未出題のアクションは最優先(学び→実践のループを早く閉じる)
+  const brandNew = fresh.filter(a => a.custom && !everIssued(a.id));
+  return brandNew.length ? brandNew : fresh;
 }
 function pick(pool, date, exclude, rnd){
   const c = eligible(pool, date, exclude);
@@ -151,23 +246,24 @@ function pickUnchiku(date, rnd, exclude){
 }
 function generateDay(date){
   const rnd = seededRand(date);
+  const all = allActions();
   const items = [];
   // リトライ: 前日の未完から1つ(連続3日まで)
   const prev = state.history[addDays(date,-1)];
   let retry = null;
   if(prev){
-    const undone = (prev.items||[]).filter(i => !i.startsWith("U:") && !(prev.done||[]).includes(i) && consecIssued(i,date) < 3 && doneCount(i) < GRAD);
+    const undone = (prev.items||[]).filter(i => !i.startsWith("U:") && !(prev.done||[]).includes(i) && consecIssued(i,date) < 3 && doneCount(i) < GRAD && findAct(i));
     if(undone.length) retry = undone[Math.floor(rnd()*undone.length)];
   }
   const slots = [
-    BANK.filter(a=>a.cat==="体"),
-    BANK.filter(a=>a.cat==="習慣"),
-    BANK.filter(a=>a.cat==="時間"),
-    BANK.filter(a=>["人","副業"].includes(a.cat)).concat(BANK.filter(a=>["体","習慣","時間"].includes(a.cat)))
+    all.filter(a=>a.cat==="体"),
+    all.filter(a=>a.cat==="習慣"),
+    all.filter(a=>a.cat==="時間"),
+    all.filter(a=>["人","副業"].includes(a.cat)).concat(all.filter(a=>["体","習慣","時間"].includes(a.cat)))
   ];
   if(retry){
     items.push(retry);
-    const cat = BANK.find(a=>a.id===retry).cat;
+    const cat = findAct(retry).cat;
     const idx = {"体":0,"習慣":1,"時間":2}[cat];
     if(idx !== undefined) slots.splice(idx,1); else slots.splice(3,1);
   }
@@ -189,17 +285,30 @@ function obsLink(path){ return "obsidian://open?vault="+encodeURIComponent(VAULT
 function unchikuByTitle(t){ return UNCHIKU.find(u=>u.t===t); }
 
 /* ---------- render ---------- */
-function go(v){ view=v; render(); window.scrollTo(0,0); }
-function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+function go(v){ view=v; making=null; render(); window.scrollTo(0,0); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function pendingNotes(){ return (state.notes||[]).filter(n => n.status === "todo"); }
 
 function render(){
   document.getElementById("hdate").textContent = today() + "(" + DOWJ[dow(today())] + ")";
-  for(const id of ["today","track","bank","set"]) document.getElementById("nav-"+id).className = (view===id)?"on":"";
+  for(const id of ["today","learn","track","bank","set"]) document.getElementById("nav-"+id).className = (view===id)?"on":"";
+  const np = pendingNotes().length;
+  document.getElementById("learndot").outerHTML = np
+    ? `<span class="dot" id="learndot">${np}</span>` : `<span id="learndot"></span>`;
+  objUrls.forEach(u=>URL.revokeObjectURL(u)); objUrls = [];
   const m = document.getElementById("main");
   if(view==="today") m.innerHTML = renderToday();
+  else if(view==="learn") m.innerHTML = renderLearn();
   else if(view==="track") m.innerHTML = renderTrack();
   else if(view==="bank") m.innerHTML = renderBank();
   else m.innerHTML = renderSet();
+  hydratePhotos();
+}
+async function hydratePhotos(){
+  for(const el of document.querySelectorAll("img[data-photo]")){
+    const b = await getPhoto(el.dataset.photo);
+    if(b){ const u = URL.createObjectURL(b); objUrls.push(u); el.src = u; }
+  }
 }
 
 function itemHtml(i, day, date){
@@ -217,25 +326,39 @@ function itemHtml(i, day, date){
       <button class="swap" onclick="swapItem('${date}','${i.replace(/'/g,"\\'")}')" title="別のにする">🔄</button>
     </div></div>`;
   }
-  const a = BANK.find(x=>x.id===i);
+  const a = findAct(i);
   if(!a) return "";
+  const srcHtml = a.custom
+    ? `✍️ <span class="srclink">${esc(a.srcName)}</span>`
+    : `📖 <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a>`;
+  const mineChip = a.custom ? '<span class="chip mine">✍️ 自分の学び</span>' : "";
   return `<div class="card"><div class="act ${done?"done":""}">
     <button class="chk ${done?"on":""}" onclick="toggle('${date}','${i}')">${done?"✓":""}</button>
     <div class="body">
       <div class="atext">${a.emoji} ${esc(a.action)}</div>
       <div class="meta">👣 一歩: ${esc(a.step)}<br>
-      <span class="chip">⏰ ${esc(a.cue)}</span>${retryChip}<br>
-      📖 <a class="srclink" href="${obsLink(a.src)}">${esc(a.srcName)}</a></div>
+      <span class="chip">⏰ ${esc(a.cue)}</span>${mineChip}${retryChip}<br>
+      ${srcHtml}</div>
     </div>
     <button class="swap" onclick="swapItem('${date}','${i}')" title="別のにする">🔄</button>
   </div></div>`;
+}
+
+function weekendBanner(){
+  const np = pendingNotes().length;
+  if(!np) return "";
+  const wd = dow(today());
+  if(wd===6 || wd===0)
+    return `<div class="banner">📥 今週の学びが${np}件たまっています。<br>週末のうちに「実践」に変えておくと、来週から出題されます。
+      <button class="btn small" onclick="go('learn')">受信箱を開く</button></div>`;
+  return "";
 }
 
 function renderToday(){
   const date = today();
   const day = getDay(date);
   const n = (day.done||[]).length;
-  let h = "";
+  let h = weekendBanner();
   h += `<div class="progress">${day.items.map(i=>`<i class="${(day.done||[]).includes(i)?"on":""}"></i>`).join("")}</div>`;
   if(n>=1) h += `<div class="win">🏆 今日は勝ち!(${n}/5)${n===5?" — 全制覇🎉":""}</div>`;
   else h += `<div class="muted" style="margin-bottom:12px">1つでもできれば今日は勝ち。全部やらなくていい。</div>`;
@@ -245,6 +368,79 @@ function renderToday(){
     <label>どうだった?</label><input class="text" value="${esc(day.refl.d)}" onchange="refl('${date}','d',this.value)">
     <label>次どう変える?</label><input class="text" value="${esc(day.refl.n)}" onchange="refl('${date}','n',this.value)"></div>`;
   return h;
+}
+
+/* ---------- 学びタブ ---------- */
+function renderLearn(){
+  const d = state.draft;
+  let h = weekendBanner();
+  h += `<div class="card"><h2>✍️ 今日の学びをメモ</h2>
+    <div class="muted">読んでて刺さった一文・気づき・ページ写真。実践に変えるのは週末でいい。</div>
+    <label>気づき・学んだこと</label>
+    <textarea id="dtext" placeholder="例: 集中力が切れるのは意志の問題じゃなく環境。机の上に物を置かない。" oninput="syncDraft()">${esc(d.text)}</textarea>
+    <div class="row2">
+      <div><label>出典(本・動画名)</label><input class="text" id="dsrc" value="${esc(d.src)}" placeholder="例: 最高の体調" oninput="syncDraft()"></div>
+      <div class="narrow"><label>ページ</label><input class="text" id="dpage" value="${esc(d.page)}" inputmode="numeric" placeholder="p." oninput="syncDraft()"></div>
+    </div>
+    ${d.photos.length ? `<div class="thumbs">${d.photos.map((k,i)=>
+      `<div class="thumb"><img data-photo="${k}" alt=""><button class="del" onclick="rmDraftPhoto(${i})">×</button></div>`).join("")}</div>` : ""}
+    <div style="margin-top:10px">
+      <button class="btn sec small" onclick="document.getElementById('photoInput').click()">📷 写真を追加</button>
+    </div>
+    <button class="btn" style="margin-top:10px" onclick="saveNote()">保存する</button></div>`;
+
+  const notes = (state.notes||[]).slice().sort((a,b)=>b.id-a.id);
+  const np = pendingNotes().length;
+  h += `<div class="card"><h2>📥 学びの受信箱 ${np?`<span class="badge todo">未処理 ${np}</span>`:""}</h2>`;
+  if(!notes.length) h += `<div class="muted">まだメモがありません。本を読んだ直後・動画を見た直後に1行だけ放り込む場所です。</div>`;
+  h += notes.map(n=>noteHtml(n)).join("");
+  h += `</div>`;
+  return h;
+}
+
+function noteHtml(n){
+  const badge = n.status==="todo" ? `<span class="badge todo">未処理</span>`
+    : n.status==="made" ? `<span class="badge made">🌱 実践にした</span>`
+    : `<span class="badge kept">📦 保管</span>`;
+  let h = `<div class="note">
+    <div class="ndate">${n.date}(${DOWJ[dow(n.date)]}) ${badge}</div>
+    <div class="ntext">${esc(n.text)}</div>
+    ${n.src ? `<div class="nsrc">📖 ${esc(n.src)}${n.page?` p.${esc(n.page)}`:""}</div>` : ""}
+    ${(n.photos||[]).map(k=>`<img class="notephoto" data-photo="${k}" alt="" onclick="this.classList.toggle('full')">`).join("")}`;
+  if(n.status==="made" && n.actionId){
+    const a = findAct(n.actionId);
+    if(a) h += `<div class="muted" style="margin-top:6px">→ ${a.emoji} ${esc(a.action)}(完了${doneCount(a.id)}回)</div>`;
+  }
+  if(making===n.id){
+    const guess = n.text.length>40 ? n.text.slice(0,40) : n.text;
+    h += `<div style="margin-top:10px; border-top:1px dashed var(--line); padding-top:10px">
+      <label>試す行動(短く・具体的に)</label>
+      <input class="text" id="mact" value="${esc(guess)}">
+      <label>最初の一歩(2分以内で終わること)</label>
+      <input class="text" id="mstep" placeholder="例: 机の上の物を1つどける">
+      <label>きっかけ(いつやる)</label>
+      <select class="text" id="mcue">${CUES.map(c=>`<option>${c}</option>`).join("")}</select>
+      <label>カテゴリ</label>
+      <select class="text" id="mcat">
+        <option value="体">💪 体・健康</option>
+        <option value="習慣" selected>🧠 習慣・メンタル</option>
+        <option value="時間">⏰ 時間・仕事</option>
+        <option value="人">🤝 人間関係</option>
+        <option value="副業">💰 副業・発信</option>
+      </select>
+      <button class="btn" style="margin-top:10px" onclick="makeAction(${n.id})">アクションにする</button>
+      <button class="btn sec" style="margin-top:8px" onclick="making=null;render()">やめる</button>
+    </div>`;
+  } else if(n.status==="todo"){
+    h += `<div style="margin-top:8px">
+      <button class="btn sec small" onclick="making=${n.id};render()">🌱 実践にする</button>
+      <button class="btn sec small" onclick="keepNote(${n.id})">📦 保管</button>
+      <button class="btn sec small" onclick="delNote(${n.id})">🗑</button>
+    </div>`;
+  } else {
+    h += `<div style="margin-top:8px"><button class="btn sec small" onclick="delNote(${n.id})">🗑</button></div>`;
+  }
+  return h + `</div>`;
 }
 
 function weekRows(){
@@ -271,11 +467,14 @@ function renderTrack(){
   const totalDays = Object.keys(state.history).filter(d=>(state.history[d].done||[]).length>=1).length;
   const totalDone = Object.values(state.history).reduce((s,r)=>s+(r.done||[]).length,0);
   const okWeeks = rows.filter(r=>r.cnt>=4).length;
+  const madeCnt = (state.notes||[]).filter(n=>n.status==="made").length;
   let h = `<div class="grid2">
     <div class="kpi"><div class="big">${totalDays}</div><div class="lb">実践した日数</div></div>
     <div class="kpi"><div class="big">${totalDone}</div><div class="lb">実践した数(累計)</div></div>
     <div class="kpi"><div class="big">${okWeeks}/6</div><div class="lb">週4達成した週</div></div>
-    <div class="kpi"><div class="big">${BANK.filter(a=>doneCount(a.id)>=GRAD).length}</div><div class="lb">✅定着(7回完了)</div></div>
+    <div class="kpi"><div class="big">${allActions().filter(a=>doneCount(a.id)>=GRAD).length}</div><div class="lb">✅定着(7回完了)</div></div>
+    <div class="kpi"><div class="big">${(state.notes||[]).length}</div><div class="lb">学びメモ</div></div>
+    <div class="kpi"><div class="big">${madeCnt}</div><div class="lb">実践に変えた学び</div></div>
   </div>`;
   h += `<div class="card"><h2>🎯 週4日以上 × 6週間(${CHALLENGE_START}〜)</h2>
     <table><tr><th></th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th><th>日</th><th>計</th></tr>`;
@@ -284,7 +483,7 @@ function renderTrack(){
     h += `<tr><td class="wk">W${r.w} ${md}〜</td>${r.days.map(d=>`<td>${d}</td>`).join("")}<td class="${r.cnt>=4?"ok4":""}">${r.cnt}</td></tr>`;
   }
   h += `</table><div class="muted" style="margin-top:8px">⭕=1つ以上実践 / ✖=0個 / 週4列が緑なら達成。5個全部やる必要はない。</div></div>`;
-  const grads = BANK.filter(a=>doneCount(a.id)>=GRAD);
+  const grads = allActions().filter(a=>doneCount(a.id)>=GRAD);
   if(grads.length){
     h += `<div class="card"><h2>✅ 定着して卒業したアクション</h2>` +
       grads.map(a=>`<div class="bankitem">${a.emoji} ${esc(a.action)}</div>`).join("") + `</div>`;
@@ -294,7 +493,16 @@ function renderTrack(){
 
 function renderBank(){
   const cats = [["体","💪 体・健康"],["習慣","🧠 習慣・メンタル"],["時間","⏰ 時間・仕事"],["人","🤝 人間関係"],["副業","💰 副業・発信"]];
-  let h = `<div class="muted" style="margin-bottom:10px">全${BANK.length}アクション + うんちく${UNCHIKU.length}本。7回完了で✅定着・卒業。補充は「/jissen 補充」で。</div>`;
+  let h = `<div class="muted" style="margin-bottom:10px">バンク${BANK.length} + 自分の学び${(state.custom||[]).length} + うんちく${UNCHIKU.length}本。7回完了で✅定着・卒業。補充は「/jissen 補充」で。</div>`;
+  if((state.custom||[]).length){
+    h += `<div class="card"><h2>✍️ 自分の学びから</h2>` + state.custom.map(a=>{
+      const n = doneCount(a.id);
+      return `<div class="bankitem">${a.emoji} ${esc(a.action)}<br>
+        <span class="cnt">${n>=GRAD?'<span class="grad">✅定着</span>':"完了"+n+"/"+GRAD}</span> ・
+        <span class="srclink">${esc(a.srcName)}</span>
+        <button class="swap" onclick="delCustom('${a.id}')" title="削除">🗑</button></div>`;
+    }).join("") + `</div>`;
+  }
   for(const [c,name] of cats){
     const list = BANK.filter(a=>a.cat===c);
     if(!list.length) continue;
@@ -324,8 +532,8 @@ function buildMd(){
         const u = unchikuByTitle(i.slice(2));
         md += `- [${done?"x":" "}] 🗣️ ${i.slice(2)} 📖 [[${u?u.p:i.slice(2)}|うんちく]]\n`;
       } else {
-        const a = BANK.find(x=>x.id===i);
-        if(a) md += `- [${done?"x":" "}] ${a.emoji} ${a.action} 📖 [[${a.src}|${a.srcName}]]\n`;
+        const a = findAct(i);
+        if(a) md += `- [${done?"x":" "}] ${a.emoji} ${a.action} ${a.custom?`✍️ ${a.srcName}`:`📖 [[${a.src}|${a.srcName}]]`}\n`;
       }
     }
     if(rec.refl && (rec.refl.t||rec.refl.d||rec.refl.n))
@@ -334,32 +542,79 @@ function buildMd(){
   }
   return md;
 }
+function photoName(n, i){ return `jissen-${n.date.replace(/-/g,"")}-${n.id.toString(36).slice(-4)}-${i+1}.jpg`; }
+function buildNotesMd(){
+  const notes = (state.notes||[]).slice().sort((a,b)=>b.id-a.id);
+  let md = `---\ntags:\n  - 実践5\n  - 学びメモ\ntype: app-capture\nupdated: ${today()}\n---\n# 💡 学びメモ(アプリ)\n\n実践5アプリの「学び」タブからの書き出し。最新が上書きされる。\n未処理のメモは \`/jissen 補充\` でアクション化の候補になる。\n\n`;
+  const todo = notes.filter(n=>n.status==="todo");
+  md += `- 全${notes.length}件(未処理 ${todo.length} / 実践化 ${notes.filter(n=>n.status==="made").length} / 保管 ${notes.filter(n=>n.status==="kept").length})\n\n`;
+  for(const n of notes){
+    const st = n.status==="todo" ? "未処理" : n.status==="made" ? "🌱実践にした" : "📦保管";
+    md += `## ${n.date} — ${st}\n\n`;
+    md += `> ${n.text.replace(/\n/g,"\n> ")}\n\n`;
+    if(n.src) md += `- 出典: ${n.src}${n.page?` p.${n.page}`:""}\n`;
+    for(const [i,k] of (n.photos||[]).entries()) md += `- ![[${photoName(n,i)}]]\n`;
+    if(n.status==="made" && n.actionId){
+      const a = findAct(n.actionId);
+      if(a) md += `- 実践アクション: **${a.action}**(一歩: ${a.step} / ${a.cue} / 完了${doneCount(a.id)}回)\n`;
+    }
+    md += `\n`;
+  }
+  return md;
+}
+async function shareFiles(files, fallbackText, label){
+  try{
+    if(navigator.canShare && navigator.canShare({files})){ await navigator.share({files}); return true; }
+  }catch(e){ if(e && e.name==="AbortError") return false; }
+  try{ await navigator.clipboard.writeText(fallbackText); alert(label+"をコピーしました(写真は共有できませんでした)"); }
+  catch(e){ alert("共有できませんでした"); }
+  return false;
+}
 async function exportMd(){
-  const f = new File([buildMd()], "実践ログ_アプリ.md", {type:"text/markdown"});
-  if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f]});
-  else { await navigator.clipboard.writeText(buildMd()); alert("Markdownをコピーしました"); }
+  const md = buildMd();
+  await shareFiles([new File([md], "実践ログ_アプリ.md", {type:"text/markdown"})], md, "Markdown");
+}
+async function exportNotes(all){
+  const md = buildNotesMd();
+  const files = [new File([md], "学びメモ_アプリ.md", {type:"text/markdown"})];
+  for(const n of state.notes||[]){
+    if(!all && n.exported) continue;
+    for(const [i,k] of (n.photos||[]).entries()){
+      const b = photoCache[k] || await getPhoto(k);
+      if(b) files.push(new File([b], photoName(n,i), {type:"image/jpeg"}));
+    }
+  }
+  const ok = await shareFiles(files, md, "学びメモ");
+  if(ok){ for(const n of state.notes||[]) n.exported = true; save(); render(); }
 }
 async function exportJson(){
-  const f = new File([JSON.stringify(state)], "jissen-backup.json", {type:"application/json"});
-  if(navigator.canShare && navigator.canShare({files:[f]})) await navigator.share({files:[f]});
-  else { await navigator.clipboard.writeText(JSON.stringify(state)); alert("JSONをコピーしました"); }
+  const j = JSON.stringify(state);
+  await shareFiles([new File([j], "jissen-backup.json", {type:"application/json"})], j, "JSON");
 }
 function importJson(){
   const t = prompt("バックアップJSONを貼り付け:");
   if(!t) return;
-  try{ const s = JSON.parse(t); if(!s.history) throw 0; state = s; save(); render(); alert("復元しました"); }
-  catch(e){ alert("読み込めませんでした"); }
+  try{
+    const s = JSON.parse(t); if(!s.history) throw 0;
+    state = s; state.notes=state.notes||[]; state.custom=state.custom||[]; state.draft=state.draft||{text:"",src:"",page:"",photos:[]};
+    save(); render(); alert("復元しました(写真は端末内のまま。JSONには含まれません)");
+  }catch(e){ alert("読み込めませんでした"); }
 }
 function renderSet(){
+  const photos = (state.notes||[]).reduce((s,n)=>s+(n.photos||[]).length,0);
+  const unsent = (state.notes||[]).filter(n=>!n.exported).length;
   return `<div class="card"><h2>📤 Obsidianへ書き出し</h2>
-    <div class="muted" style="margin-bottom:10px">「実践ログ_アプリ.md」を共有→Obsidianの 01_private/07_Practice/ に上書き保存。夜の締め(/daily-note 夜)がこれを読んで実践ログに反映する。</div>
-    <button class="btn" onclick="exportMd()">実践ログを書き出す</button></div>
+    <div class="muted" style="margin-bottom:10px">共有シートから「Obsidian」を選んで保存。mdは 01_private/07_Practice/ に上書き。写真はVault内ならどこでも \`![[...]]\` で表示されます(99_System/Attachments 推奨)。</div>
+    <button class="btn" style="margin-bottom:8px" onclick="exportMd()">実践ログを書き出す</button>
+    <button class="btn" onclick="exportNotes(false)">学びメモを書き出す(md＋新しい写真${unsent?` ${unsent}件`:""})</button>
+    <button class="btn sec" style="margin-top:8px" onclick="exportNotes(true)">写真も全部つけて書き出す(${photos}枚)</button></div>
   <div class="card"><h2>🗄️ バックアップ</h2>
+    <div class="muted" style="margin-bottom:10px">JSONには記録と学びメモの文章が入ります(写真は入りません。写真は上の書き出しでObsidianへ)。</div>
     <button class="btn sec" style="margin-bottom:8px" onclick="exportJson()">JSONバックアップ</button>
     <button class="btn sec" onclick="importJson()">JSONから復元</button></div>
   <div class="card"><h2>⚠️ リセット</h2>
-    <button class="btn sec" onclick="if(confirm('全記録を削除して初期状態に戻しますか?')){localStorage.removeItem(KEY);state=load();render()}">初期化</button></div>
-  <div class="muted">実践5 v1.0.0 — 学びを1日5つ、人生に。<br>1. 極小に分解 / 2. 20秒ルール / 3. 既存習慣に接続 / 4. 同じ場所で / 5. 週4×6週 / 6. 予定に入れる / 7. 振り返りは短く</div>`;
+    <button class="btn sec" onclick="if(confirm('全記録を削除して初期状態に戻しますか?')){localStorage.removeItem(KEY);state=load();state.notes=[];state.custom=[];state.draft={text:'',src:'',page:'',photos:[]};render()}">初期化</button></div>
+  <div class="muted">実践5 v1.2.0 — 学びを1日5つ、人生に。<br>1. 極小に分解 / 2. 20秒ルール / 3. 既存習慣に接続 / 4. 同じ場所で / 5. 週4×6週 / 6. 予定に入れる / 7. 振り返りは短く</div>`;
 }
 
 /* ---------- actions ---------- */
@@ -376,9 +631,9 @@ function swapItem(date, id){
   let repl = null;
   if(id.startsWith("U:")) repl = "U:"+pickUnchiku(date, rnd, day.items).t;
   else {
-    const a = BANK.find(x=>x.id===id);
-    const pool = BANK.filter(x=>x.cat===a.cat);
-    const p = pick(pool, date, day.items, rnd) || pick(BANK, date, day.items, rnd);
+    const a = findAct(id);
+    const pool = allActions().filter(x=>x.cat===(a?a.cat:"習慣"));
+    const p = pick(pool, date, day.items, rnd) || pick(allActions(), date, day.items, rnd);
     if(p) repl = p.id;
   }
   if(!repl) { alert("代わりの候補がありません"); return; }
@@ -389,6 +644,96 @@ function swapItem(date, id){
   save(); render();
 }
 function refl(date, k, v){ const day=getDay(date); day.refl=day.refl||{t:"",d:"",n:""}; day.refl[k]=v; save(); }
+
+/* ---------- 学びメモ ---------- */
+function syncDraft(){
+  const t=document.getElementById("dtext"), s=document.getElementById("dsrc"), p=document.getElementById("dpage");
+  if(t) state.draft.text = t.value;
+  if(s) state.draft.src = s.value;
+  if(p) state.draft.page = p.value;
+  save();
+}
+async function addPhotos(input){
+  const files = Array.from(input.files||[]);
+  input.value = "";
+  if(!files.length) return;
+  syncDraft();
+  for(const f of files){
+    try{
+      const blob = await resizeImage(f, 1400, 0.72);
+      const key = "p"+Date.now()+"-"+Math.random().toString(36).slice(2,7);
+      await putPhoto(key, blob);
+      photoCache[key] = blob;
+      state.draft.photos.push(key);
+    }catch(e){ alert("写真を追加できませんでした: "+(e.message||e)); }
+  }
+  save(); render();
+}
+async function rmDraftPhoto(i){
+  const k = state.draft.photos[i];
+  state.draft.photos.splice(i,1);
+  save(); render();
+  if(k) await delPhoto(k);
+}
+function saveNote(){
+  syncDraft();
+  const d = state.draft;
+  if(!d.text.trim() && !d.photos.length){ alert("気づきを1行、または写真を入れてください"); return; }
+  state.notes.push({
+    id: Date.now(), date: today(), text: d.text.trim(),
+    src: d.src.trim(), page: d.page.trim(), photos: d.photos.slice(),
+    status: "todo", actionId: null, exported: false
+  });
+  state.draft = {text:"", src:"", page:"", photos:[]};
+  save(); render();
+}
+function keepNote(id){
+  const n = state.notes.find(x=>x.id===id);
+  if(n){ n.status = "kept"; save(); render(); }
+}
+async function delNote(id){
+  if(!confirm("このメモを削除しますか?(写真も消えます)")) return;
+  const i = state.notes.findIndex(x=>x.id===id);
+  if(i<0) return;
+  const n = state.notes[i];
+  state.notes.splice(i,1);
+  save(); making=null; render();
+  for(const k of n.photos||[]) await delPhoto(k);
+}
+function nextCustomId(){
+  let n = 1;
+  const used = new Set((state.custom||[]).map(a=>a.id));
+  while(used.has("M"+String(n).padStart(2,"0"))) n++;
+  return "M"+String(n).padStart(2,"0");
+}
+const CAT_EMOJI = {"体":"💪","習慣":"🧠","時間":"⏰","人":"🤝","副業":"💰"};
+function makeAction(noteId){
+  const n = state.notes.find(x=>x.id===noteId);
+  if(!n) return;
+  const action = document.getElementById("mact").value.trim();
+  const step = document.getElementById("mstep").value.trim();
+  const cue = document.getElementById("mcue").value;
+  const cat = document.getElementById("mcat").value;
+  if(!action){ alert("試す行動を書いてください"); return; }
+  if(!step){ alert("最初の一歩(2分以内)を書いてください。ここが小さいほど続きます"); return; }
+  const id = nextCustomId();
+  state.custom.push({
+    id, cat, emoji: CAT_EMOJI[cat]||"🌱", action, step, cue,
+    custom: true, noteId,
+    src: "", srcName: (n.src ? n.src + (n.page?` p.${n.page}`:"") : "自分の学び") + `(${n.date})`
+  });
+  n.status = "made"; n.actionId = id;
+  making = null;
+  save(); render();
+  alert("追加しました。明日の実践5に優先的に出てきます。");
+}
+function delCustom(id){
+  if(!confirm("このアクションを削除しますか?(学びメモは残ります)")) return;
+  const i = (state.custom||[]).findIndex(a=>a.id===id);
+  if(i>=0) state.custom.splice(i,1);
+  for(const n of state.notes||[]) if(n.actionId===id){ n.actionId=null; n.status="todo"; }
+  save(); render();
+}
 
 render();
 if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
