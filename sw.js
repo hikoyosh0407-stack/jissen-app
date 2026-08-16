@@ -1,4 +1,4 @@
-const CACHE = 'jissen-v1.3.4';
+const CACHE = 'jissen-v1.3.5';
 const ASSETS = ['./', 'index.html', 'jissen-data.js', 'unchiku-data.js', 'notes-data.js', 'manifest.webmanifest', 'icon-180.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
