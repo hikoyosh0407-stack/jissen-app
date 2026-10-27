@@ -56,6 +56,10 @@ a.btn{text-decoration:none; text-align:center}
 .chip.mine{background:#4A1D3D; color:var(--pink); font-weight:700}
 .srclink{color:var(--acc2); text-decoration:none; font-size:12px}
 .swap{background:none; border:none; color:var(--sub); font-size:16px; padding:4px 6px; cursor:pointer; flex-shrink:0}
+.memo{margin:8px 0 0 56px}
+.memobtn{background:none; border:none; color:var(--acc2); font-size:13px; padding:4px 0; cursor:pointer; font-family:inherit}
+.memo textarea{min-height:60px; font-size:14px}
+.memo .prev{font-size:11px; color:var(--sub); margin-top:4px; line-height:1.5}
 .win{background:linear-gradient(135deg,#065F46,#047857); border:1px solid var(--acc); border-radius:14px;
   padding:12px 14px; margin-bottom:12px; font-weight:800; font-size:15px; text-align:center}
 .banner{background:#3B2A0B; border:1px solid var(--warn); border-radius:14px; padding:12px 14px;
@@ -324,6 +328,22 @@ async function hydratePhotos(){
   }
 }
 
+// 各項目のその日のメモ。day.memo = {項目ID: テキスト}
+const memoOpen = new Set();
+function prevMemo(id, before){
+  const ds = Object.keys(state.history).filter(d=>d<before).sort().reverse();
+  for(const d of ds){ const m = (state.history[d].memo||{})[id]; if(m) return {d, m}; }
+  return null;
+}
+function memoHtml(i, day, date){
+  const k = day.items.indexOf(i);
+  const text = (day.memo||{})[i] || "";
+  const p = prevMemo(i, date);
+  const prevLine = p ? `<div class="prev">前回(${p.d.slice(5)}): ${esc(p.m)}</div>` : "";
+  if(!text && !memoOpen.has(date+"|"+i))
+    return `<div class="memo"><button class="memobtn" onclick="openMemo('${date}',${k})">📝 メモ${p?"(前回あり)":""}</button></div>`;
+  return `<div class="memo"><textarea id="memo-${k}" placeholder="やってみてどうだった?気づき・工夫など" oninput="setMemo('${date}',${k},this.value)">${esc(text)}</textarea>${prevLine}</div>`;
+}
 function itemHtml(i, day, date){
   const done = (day.done||[]).includes(i);
   const retryChip = (day.retry===i) ? '<span class="chip retry">🔁 リトライ</span>' : "";
@@ -337,7 +357,7 @@ function itemHtml(i, day, date){
         📖 <a class="srclink" href="${u?obsLink(u.p):"#"}">うんちくノートを開く</a></div>
       </div>
       <button class="swap" onclick="swapItem('${date}','${i.replace(/'/g,"\\'")}')" title="別のにする">🔄</button>
-    </div></div>`;
+    </div>${memoHtml(i, day, date)}</div>`;
   }
   const a = findAct(i);
   if(!a) return "";
@@ -354,7 +374,7 @@ function itemHtml(i, day, date){
       ${srcHtml}</div>
     </div>
     <button class="swap" onclick="swapItem('${date}','${i}')" title="別のにする">🔄</button>
-  </div></div>`;
+  </div>${memoHtml(i, day, date)}</div>`;
 }
 
 function weekendBanner(){
@@ -554,8 +574,11 @@ function buildMd(){
         md += `- [${done?"x":" "}] 🗣️ ${i.slice(2)} 📖 [[${u?u.p:i.slice(2)}|うんちく]]\n`;
       } else {
         const a = findAct(i);
-        if(a) md += `- [${done?"x":" "}] ${a.emoji} ${a.action} ${a.custom?`✍️ ${a.srcName}`:`📖 [[${a.src}|${a.srcName}]]`}\n`;
+        if(!a) continue;
+        md += `- [${done?"x":" "}] ${a.emoji} ${a.action} ${a.custom?`✍️ ${a.srcName}`:`📖 [[${a.src}|${a.srcName}]]`}\n`;
       }
+      const m = (rec.memo||{})[i];
+      if(m) md += `    - 📝 ${m.replace(/\s*\n\s*/g," / ")}\n`;
     }
     if(rec.refl && (rec.refl.t||rec.refl.d||rec.refl.n))
       md += `- 試した: ${rec.refl.t||""} / どうだった: ${rec.refl.d||""} / 次: ${rec.refl.n||""}\n`;
@@ -669,6 +692,19 @@ function swapItem(date, id){
   save(); render();
 }
 function refl(date, k, v){ const day=getDay(date); day.refl=day.refl||{t:"",d:"",n:""}; day.refl[k]=v; save(); }
+function openMemo(date, k){
+  const day = getDay(date);
+  memoOpen.add(date+"|"+day.items[k]);
+  render();
+  const t = document.getElementById("memo-"+k); if(t) t.focus();
+}
+function setMemo(date, k, v){
+  const day = getDay(date);
+  const id = day.items[k];
+  day.memo = day.memo||{};
+  if(v.trim()) day.memo[id] = v; else delete day.memo[id];
+  save(); // 入力のたびに保存(再描画はしない=入力中のカーソルを保つ)
+}
 
 /* ---------- 学びメモ ---------- */
 function syncDraft(){
